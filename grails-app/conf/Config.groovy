@@ -21,15 +21,18 @@ log4j = {
            'net.sf.ehcache.hibernate'
 
     warn   'org.mortbay.log'
-    warn  'org.grails.plugin.resource'
+    error  'org.grails.plugin.resource'
 }
 
 grails.resources.modules = {
-
-    'less' {
+    less {
+        resource url:'less/test_import.less'
+        resource url:'less/test_import2.less'
         resource url:'less/test.less'
         resource url:'less/test.css'
+        
     }
+
 }
 grails.views.default.codec="none" // none, html, base64
 grails.views.gsp.encoding="UTF-8"
