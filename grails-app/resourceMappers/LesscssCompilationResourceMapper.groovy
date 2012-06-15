@@ -46,7 +46,7 @@ class LesscssCompilationResourceMapper implements GrailsApplicationAware {
             
             // Update mapping entry
             // This is now a CSS file, not a LESS file
-            //resource.processedFile = target
+            resource.processedFile = target
 
             // TODO: Verify that this is necessary
             resource.sourceUrlExtension = 'css'
