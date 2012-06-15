@@ -1,7 +1,8 @@
 import org.grails.plugin.resource.mapper.MapperPhase
 
 /**
- * @author Paul Fairless, Gary Turovsky
+ * @author Paul Fairless
+ * @author Gary Turovsky
  *
  * Mapping file to compile .less files into .css files
  */
@@ -19,10 +20,17 @@ class LesscssCompilationResourceMapper implements GrailsApplicationAware {
 
     static defaultIncludes = ['**/*.less']
 
+    LessCompiler lessCompiler
+
+    public LesscssCompilationResourceMapper() {
+        this(new LessCompiler())
+    }
+
+    public LesscssCompilationResourceMapper(LessCompiler compiler) {
+        lessCompiler = compiler
+    }
+
     def map(resource, config) {
-        //TODO: Instantiating the compiler here slows LESS compilation down, 
-        //but moving it to class scope causes occasional errors.
-        LessCompiler lessCompiler = new LessCompiler()
         
         File input = resource.processedFile
         File target = new File(generateCompiledFileFromOriginal(input.absolutePath))
@@ -32,12 +40,13 @@ class LesscssCompilationResourceMapper implements GrailsApplicationAware {
         }
 
         try {
+
             //Compile LESS file
             lessCompiler.compile input, target
-
+            
             // Update mapping entry
             // This is now a CSS file, not a LESS file
-            resource.processedFile = target
+            //resource.processedFile = target
 
             // TODO: Verify that this is necessary
             resource.sourceUrlExtension = 'css'
