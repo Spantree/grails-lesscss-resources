@@ -6,14 +6,12 @@ import org.grails.plugin.resource.mapper.MapperPhase
  *
  * Mapping file to compile .less files into .css files
  */
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.lesscss.LessCompiler
 import org.lesscss.LessException
+import org.lesscss.LessSource
 
-class LesscssCompilationResourceMapper implements GrailsApplicationAware {
 
-    GrailsApplication grailsApplication
+class LesscssCompilationResourceMapper {
 
     def phase = MapperPhase.GENERATION 
     def operation = "compilation"
@@ -33,7 +31,7 @@ class LesscssCompilationResourceMapper implements GrailsApplicationAware {
 
         def lessCompiler
 
-        if(testingCompiler==null)
+        if(testingCompiler == null)
             lessCompiler = new LessCompiler()
         else
             lessCompiler = testingCompiler
@@ -45,26 +43,34 @@ class LesscssCompilationResourceMapper implements GrailsApplicationAware {
             log.debug "Compiling LESS file [${input}] into [${target}]"
         }
 
-        try {
+        if(input && input.exists()) {
+            try {
 
-            //Compile LESS file
-            lessCompiler.compile input, target
-            
-            // Update mapping entry
-            // This is now a CSS file, not a LESS file
-            resource.processedFile = target
+                // Compile LESS file
+                lessCompiler.compile input, target
+                
+                // Update mapping entry
+                // This is now a CSS file, not a LESS file
+                resource.processedFile = target
 
-            // TODO: Verify that this is necessary
-            resource.sourceUrlExtension = 'css'
-            resource.contentType = 'text/css'
-            resource.tagAttributes?.rel = 'stylesheet'
+                // TODO: Verify that this is necessary
+                resource.sourceUrlExtension = 'css'
+                resource.contentType = 'text/css'
+                resource.tagAttributes?.rel = 'stylesheet'
 
-            resource.updateActualUrlFromProcessedFile()
+                resource.updateActualUrlFromProcessedFile()
 
-        } catch (LessException e) {
-            log.error("error compiling less file: ${input}", e)
+            } catch (LessException e) {
+                log.error("Error compiling less file: ${input}", e)
+            } catch(FileNotFoundException e) {
+                log.error("""\
+Error compiling $input.
+You may be missing an imported LESS file in your resource bundle.  Make sure to bundle all imports and imports of imports.
+LESS compiler error: $e
+""")
+            }
+
         }
-
     }
 
     private String generateCompiledFileFromOriginal(String original) {
